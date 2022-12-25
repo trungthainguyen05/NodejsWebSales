@@ -12,7 +12,6 @@ npm outdated : check xem thư viện có bị lỗi thời?
 npm install --save-exact ......@version
 example: npm install --save-exact @babel/core@7.19.3
 
-# Sequelize là một ORM Node.js nền Promise dành cho Postgres, MySQL, MariaDB, SQLite và Microsoft SQL Server.
 # Body-parser: Là phần mềm phân tích phần body của Node.js
 # Dotenv: Dotenv là một mô đun zero-dependency, tải các biến môi trường từ tệp .env vào process.env
 # Axios: Là client HTTP dựa trên promise cho trình duyệt và node.js
@@ -30,4 +29,20 @@ npm install --save-dev @babel/core@7.20.2 @babel/node@7.20.2 @babel/preset-env@7
 # Running webSales
 npm start
 
+### Install DATABASE
+# Sequelize là một ORM Node.js nền Promise dành cho Postgres, MySQL, MariaDB, SQLite và Microsoft SQL Server.
+npm install --save-dev sequelize@6.28.0
+
+# sequelize-cli is command Line Interface (for write code)
+npm install --save-dev sequelize-cli@6.5.2
+
+npx sequelize --help
+npx sequelize init
+
+npx sequelize-cli model:generate --name User --attributes firstName:string,lastName:string,email:string
+npx sequelize-cli db:migrate
+npx sequelize-cli db:migrate:undo
+
+# mysql2 : cấu hình truy cập đến database, có thể sử dụng lệnh query đến sever để lấy dữ liệu
+npm install --save mysql2@2.2.5
 
