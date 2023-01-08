@@ -1,33 +1,35 @@
 import userService from "../services/userService";
 
-let handleLogin = async (req, res) => {
-    //Validate input
-    let inputEmail = req.body.email;
-    let inputPassword = req.body.password;
-
-    if (!inputEmail || !inputPassword) {
-        return res.status(500).json({
-            errCode: 1,
-            errMessage: 'Missing input parameters',
-        })
-    }
-
+let handleGetAllUser = async (req, res) => {
     try {
-        let userInfo = await userService.handleLoginService(inputEmail, inputPassword);
-        return res.status(200).json(userInfo)
+        let userList = await userService.handleGetAllUser(req.body.limit);
+        return res.status(200).json(userList);
     } catch (e) {
         console.log(e);
         return res.status(200).json({
             errCode: -1,
-            errMessage: 'Error from server',
+            errMessage: 'Error from server'
         })
     }
 }
 
-let handleCreateNewUser = async (req, res) => {
+let handleGetAllUserByPaging = async (req, res) => {
     try {
-        let message = await userService.handleCreateNewUserService(req.body);
-        return res.status(200).json(message);
+        let userList = await userService.handleGetAllUserByPaging(req.body.offset, req.body.limit);
+        return res.status(200).json(userList);
+    } catch (e) {
+        console.log(e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
+let handleDeleteUser = async (req, res) => {
+    try {
+        let result = await userService.handleDeleteUserService(req.body.id);
+        return res.status(200).json(result);
     } catch (e) {
         console.log(e);
         return res.status(200).json({
@@ -38,6 +40,7 @@ let handleCreateNewUser = async (req, res) => {
 }
 
 module.exports = {
-    handleLogin: handleLogin,
-    handleCreateNewUser: handleCreateNewUser,
+    handleGetAllUser: handleGetAllUser,
+    handleGetAllUserByPaging: handleGetAllUserByPaging,
+    handleDeleteUser: handleDeleteUser
 }

@@ -14,148 +14,111 @@ let hashUserPassword = (password) => {
     })
 }
 
-
-let handleLoginService = (inputEmail, inputPassword) => {
+let handleGetAllUser = (inputLimit) => {
     return new Promise(async (resolve, reject) => {
         try {
-            //Validate inputdata
-            if (!inputEmail || !inputPassword) {
-                resolve({
-                    errCode: 1,
-                    errMessage: 'Missing require parameters'
-                })
+            if (!inputLimit) {
+                inputLimit = 10;
+            }
+            let { count, rows } = await db.User.findAndCountAll({
+                offset: 0, //position we start to get the data
+                limit: + inputLimit, //how many record we want to get
+                raw: true
+            });
+
+            let userList = rows;
+            if (userList && userList.length > 0) {
+                for (let i = 0; i < userList.length; i++) {
+                    // userList[i] = rows[i];
+                    delete userList[i].password;
+                }
             }
 
-            let userData = {};
-            let isExist = await checkUserEmail(inputEmail);
-            if (isExist) {
-                userData = await db.User.findOne({
-                    where: { email: inputEmail },
-                    attributes: ['id', 'email', 'firstName', 'password',
-                        'lastName', 'address', 'phonenumber',
-                        'gender', 'roleId'],
-                    raw: true
-                })
-
-                //Compared password
-                let comparedPasswordResult = await bcrypt.compareSync(inputPassword, userData.password);
-                if (comparedPasswordResult) {
-                    delete userData.password;
-                    resolve({
-                        errCode: 0,
-                        errMessage: 'The login is succesful',
-                        user: userData
-                    })
-                }
-
-            } else {
-                resolve({
-                    errCode: 2,
-                    errMessage: 'The email or password is not correct.'
-                })
-            }
-
-        } catch (e) {
-            reject(e);
-        }
-    })
-}
-
-let checkUserEmail = (inputEmail) => {
-    return new Promise(async (resolve, reject) => {
-        try {
-            let user = await db.User.findOne({
-                where: {
-                    email: inputEmail
-                }
+            resolve({
+                errCode: 0,
+                errMessage: 'OK',
+                userList: userList,
+                count: count
             })
 
-            if (user) {
-                resolve(true);
-            } else {
-                resolve(false);
-            }
         } catch (e) {
             reject(e)
         }
     })
 }
 
-/* Create user
-step 0: validate data
-step 1: check exist email
-Step 2: convert pass into hashPass
-Step 3:
-*/
-
-let handleCreateNewUserService = (data) => {
+let handleGetAllUserByPaging = (inputOffset, inputLimit) => {
     return new Promise(async (resolve, reject) => {
         try {
-            //validate
-            let validateField = ['email', 'password', 'firstName', 'lastName',
-                'address', 'phonenumber', 'gender', 'roleId'];
-            let resultValidate = validateCreateNewUserData(validateField, data);
-            if (resultValidate.isValid) {
-                resolve({
-                    errCode: 1,
-                    errMessage: `Missing parameters: ${resultValidate.fieldNotQualify}`
-                })
+            if (!inputOffset || !inputLimit) {
+                inputOffset = 0;
+                inputLimit = 10;
             }
 
-            //check email in database
-            let isExist = await checkUserEmail(data.email);
-            if (isExist) {
-                resolve({
-                    errCode: 2,
-                    errMessage: 'The register email is exsiting in the database'
-                })
-            }
-            //Create user
-            else {
-                //hash password
-                let hashPassword = await hashUserPassword(data.password);
+            let { count, rows } = await db.User.findAndCountAll({
+                offset: + inputOffset, //position we start to get the data
+                limit: + inputLimit, //how many record we want to get
+                raw: true
+            });
 
-                let createUser = await db.User.create({
-                    email: data.email,
-                    password: hashPassword,
-                    firstName: data.firstName,
-                    lastName: data.lastName,
-                    address: data.address,
-                    phonenumber: data.phonenumber,
-                    gender: data.gender,
-                    roleId: data.roleId,
-                });
-                await createUser.save();
-                resolve({
-                    errCode: 0,
-                    errMessage: 'Create the user is successful.'
-                })
+            // let userList = {};
+            if (rows && rows.length > 0) {
+                for (let i = 0; i < rows.length; i++) {
+                    // userList[i] = rows[i];
+                    delete rows[i].password;
+                }
             }
+
+            resolve({
+                errCode: 0,
+                errMessage: 'OK',
+                userList: rows,
+                count: count
+            })
+
         } catch (e) {
-            reject(e);
+            reject(e)
         }
     })
 }
 
-let validateCreateNewUserData = (arrField, data) => {
-    let isValid = false;
-    let fieldNotQualify = '';
+let handleDeleteUserService = (inputId) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!inputId) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing input id',
+                })
+            }
 
-    for (let i = 0; i < arrField.length; i++) {
-        if (!data[arrField[i]]) {
-            isValid = true;
-            fieldNotQualify = arrField[i];
-            break;
+            let user = await db.User.findOne({
+                where: { id: inputId },
+            })
+
+            if (user) {
+                await db.User.destroy({
+                    where: { id: inputId }
+                })
+                resolve({
+                    errCode: 0,
+                    errMessage: 'Delete the user is successful',
+                })
+            } else {
+                resolve({
+                    errCode: 2,
+                    errMessage: 'The id is not correct',
+                })
+            }
+
+        } catch (e) {
+            reject(e)
         }
-    }
-
-    return {
-        isValid: isValid,
-        fieldNotQualify: fieldNotQualify,
-    }
+    })
 }
 
 module.exports = {
-    handleLoginService: handleLoginService,
-    handleCreateNewUserService: handleCreateNewUserService,
+    handleGetAllUser: handleGetAllUser,
+    handleGetAllUserByPaging: handleGetAllUserByPaging,
+    handleDeleteUserService: handleDeleteUserService,
 }

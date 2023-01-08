@@ -1,17 +1,16 @@
 import express from "express";
-import homeController from "../controllers/homeController";
-import userController from "../controllers/userController";
+import userRoute from "./userRoute";
+import auth from "./auth";
 
 let router = express.Router();
 
 let initWebRouters = (app) => {
-    router.get("/", homeController.getHomePage);
+    // router.get("/", homeController.getHomePage);
 
-    router.post("/api/login", userController.handleLogin);
-    router.post("/api/create-new-user", userController.handleCreateNewUser);
+    app.use("/v1", auth);
+    app.use("/v1", userRoute);
 
-
-    return app.use("/", router)
+    return app.use(router);
 }
 
 module.exports = initWebRouters;

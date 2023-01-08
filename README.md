@@ -48,3 +48,9 @@ npx sequelize-cli db:seed:all
 # mysql2 : cấu hình truy cập đến database, có thể sử dụng lệnh query đến sever để lấy dữ liệu
 npm install --save mysql2@2.2.5
 
+
+# bcryptjs use to hash our password
+npm install bcryptjs@2.4.3
+
+# jsonwebtoken to create token
+npm install jsonwebtoken@9.0.0
