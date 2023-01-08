@@ -42,6 +42,8 @@ npx sequelize init
 npx sequelize-cli model:generate --name User --attributes firstName:string,lastName:string,email:string
 npx sequelize-cli db:migrate
 npx sequelize-cli db:migrate:undo
+npx sequelize-cli db:seed:all
+
 
 # mysql2 : cấu hình truy cập đến database, có thể sử dụng lệnh query đến sever để lấy dữ liệu
 npm install --save mysql2@2.2.5
