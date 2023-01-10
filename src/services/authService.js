@@ -21,7 +21,7 @@ let generateAccessToken = (user) => {
                 roleId: user.roleId,
             },
                 process.env.JWT_ACCESS_KEY,
-                { expiresIn: "30s" }
+                { expiresIn: "1d" }
             )
             resolve(accessToken);
         } catch (e) {
@@ -45,7 +45,7 @@ let generateRefreshToken = (user) => {
                 roleId: user.roleId,
             },
                 process.env.JWT_REFRESH_KEY,
-                { expiresIn: "30s" }
+                { expiresIn: "30d" }
             )
             resolve(refreshToken);
         } catch (e) {
@@ -91,11 +91,17 @@ let handleLoginService = (inputEmail, inputPassword) => {
                 //Compared password
                 let comparedPasswordResult = await bcrypt.compareSync(inputPassword, userData.password);
                 if (comparedPasswordResult) {
+
                     delete userData.password;
+                    let accessToken = await generateAccessToken(userData);
+                    let refreshToken = await generateRefreshToken(userData);
+
                     resolve({
                         errCode: 0,
                         errMessage: 'The login is succesful',
-                        user: userData
+                        user: userData,
+                        accessToken: accessToken,
+                        refreshToken: refreshToken,
                     })
                 }
 

@@ -3,6 +3,7 @@ import userService from "../services/userService";
 let handleGetAllUser = async (req, res) => {
     try {
         let userList = await userService.handleGetAllUser(req.body.limit);
+        console.log('>> Check reponse from userController: ', userList)
         return res.status(200).json(userList);
     } catch (e) {
         console.log(e);
