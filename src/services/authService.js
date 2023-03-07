@@ -5,6 +5,8 @@ import dotenv from "dotenv";
 
 dotenv.config();
 const salt = bcrypt.genSaltSync(10);
+//REDIS: lưu token into database
+let refreshTokensDB = [];
 
 //Generate access token
 let generateAccessToken = (user) => {
@@ -21,7 +23,7 @@ let generateAccessToken = (user) => {
                 roleId: user.roleId,
             },
                 process.env.JWT_ACCESS_KEY,
-                { expiresIn: "1d" }
+                { expiresIn: "30d" }
             )
             resolve(accessToken);
         } catch (e) {
@@ -96,6 +98,8 @@ let handleLoginService = (inputEmail, inputPassword) => {
                     let accessToken = await generateAccessToken(userData);
                     let refreshToken = await generateRefreshToken(userData);
 
+                    // await insertRefreshTokenInDb(refreshToken);
+
                     resolve({
                         errCode: 0,
                         errMessage: 'The login is succesful',
@@ -116,6 +120,17 @@ let handleLoginService = (inputEmail, inputPassword) => {
             reject(e);
         }
     })
+}
+
+let insertRefreshTokenInDb = async (refresh_Token) => {
+    try {
+        let createRefreshToken = await db.refreshToken.create({
+            token: refresh_Token,
+        });
+        return await createRefreshToken.save();
+    } catch (e) {
+        console.log(e);
+    }
 }
 
 let checkUserEmail = (inputEmail) => {
@@ -212,9 +227,97 @@ let validateCreateNewUserData = (arrField, data) => {
     }
 }
 
+let isCheckExistRefreshToken = async (refreshToken) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let isCheckExist = false;
+            if (!refreshToken) {
+                return isCheckExist;
+            }
 
+            let checkToken = await db.refreshToken.findOne({
+                where: {
+                    token: refreshToken
+                }
+            })
+
+            // console.log('>> Check compare refreshtoken: ', checkToken)
+
+            if (!checkToken) {
+                resolve({
+                    isCheckExist: isCheckExist
+                })
+            } else {
+                isCheckExist = true;
+                resolve({
+                    isCheckExist: isCheckExist
+                })
+            }
+        } catch (e) {
+            reject(e);
+        }
+    })
+
+}
+
+let getRefreshTokenService = (refresh_Token) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            console.log('>>check refresh_Token: ', refresh_Token);
+            if (!refresh_Token) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'The refreshToken is not exist.'
+                })
+            }
+
+
+            let isCheckRefreshToken = await isCheckExistRefreshToken(refresh_Token);
+
+            if (isCheckRefreshToken.isCheckExist = false) {
+                resolve({
+                    errCode: 2,
+                    errMessage: 'The refreshToken is not valid.'
+                })
+            }
+
+            else {
+                let response = {};
+                jwt.verify(refresh_Token,
+                    process.env.JWT_REFRESH_KEY,
+                    (err, user) => {
+                        if (err) {
+                            response.errCode = 3;
+                            response.errMessage = `Verify token process is failed, because: ${err}`;
+                            return response;
+                        }
+                        else {
+                            // refreshTokensDB = refreshTokensDB.filter((token) => token !== refresh_Token);
+                            console.log('>> check user: ', user)
+                            let newAccessToken = generateAccessToken(user);
+                            let newRefreshToken = generateRefreshToken(user);
+
+                            // insertRefreshTokenInDb(newRefreshToken);
+
+                            response.errCode = 0;
+                            response.errMessage = "getRefreshTokenService is sucessful";
+                            response.accessToken = newAccessToken;
+                            response.refreshToken = newRefreshToken;
+
+                        }
+                    })
+                await insertRefreshTokenInDb(response.refreshToken);
+                resolve(response);
+            }
+
+        } catch (e) {
+            reject(e)
+        }
+    })
+}
 
 module.exports = {
     handleLoginService: handleLoginService,
     handleCreateNewUserService: handleCreateNewUserService,
+    getRefreshTokenService: getRefreshTokenService,
 }

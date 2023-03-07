@@ -54,3 +54,5 @@ npm install bcryptjs@2.4.3
 
 # jsonwebtoken to create token
 npm install jsonwebtoken@9.0.0
+
+npm install cookie-parser@1.4.6

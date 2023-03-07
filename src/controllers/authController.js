@@ -1,5 +1,6 @@
 import authService from "../services/authService";
 
+
 let handleLogin = async (req, res) => {
     let inputEmail = req.body.email;
     let inputPassword = req.body.password;
@@ -38,8 +39,37 @@ let handleCreateNewUser = async (req, res) => {
     }
 }
 
+let getRefreshToken = async (req, res) => {
+    try {
+        let refresh_Token = req.cookies.refreshToken;
+        let message = await authService.getRefreshTokenService(refresh_Token);
+        if (!message || !message.refreshToken) {
+            return res.status(200).json({
+                errCode: -2,
+                errMessage: message,
+            });
+        }
+        else {
+            res.cookie("refreshToken", message.refreshToken, {
+                httpOnly: true,
+                secure: false,
+                path: "/",
+                sameSite: "strict",
+            });
+            return res.status(200).json(message);
+        }
+
+    } catch (e) {
+        console.log(e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
 
 module.exports = {
     handleLogin: handleLogin,
     handleCreateNewUser: handleCreateNewUser,
+    getRefreshToken: getRefreshToken,
 }

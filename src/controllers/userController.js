@@ -3,7 +3,6 @@ import userService from "../services/userService";
 let handleGetAllUser = async (req, res) => {
     try {
         let userList = await userService.handleGetAllUser(req.body.limit);
-        console.log('>> Check reponse from userController: ', userList)
         return res.status(200).json(userList);
     } catch (e) {
         console.log(e);
@@ -40,8 +39,22 @@ let handleDeleteUser = async (req, res) => {
     }
 }
 
+let handleGetAllcodes = async (req, res) => {
+    try {
+        let result = await userService.handleGetAllcodesService(req.query.type);
+        return res.status(200).json(result);
+    } catch (e) {
+        console.log(e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
 module.exports = {
     handleGetAllUser: handleGetAllUser,
     handleGetAllUserByPaging: handleGetAllUserByPaging,
-    handleDeleteUser: handleDeleteUser
+    handleDeleteUser: handleDeleteUser,
+    handleGetAllcodes: handleGetAllcodes,
 }

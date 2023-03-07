@@ -4,7 +4,6 @@ let verifyToken = async (req, res, next) => {
     try {
         let token = req.body.accessToken;
         let responseFromMiddleware = await middlewareService.verifyTokenService(token);
-        console.log('>> Check token: ', responseFromMiddleware)
         if (responseFromMiddleware.errCode === 0) {
             next();
             return;
