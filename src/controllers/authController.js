@@ -14,7 +14,7 @@ let handleLogin = async (req, res) => {
             sameSite: "strict",
         })
 
-        delete userInfo.refreshToken
+        // delete userInfo.refreshToken
 
         return res.status(200).json(userInfo)
     } catch (e) {

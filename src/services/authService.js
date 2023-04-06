@@ -98,7 +98,8 @@ let handleLoginService = (inputEmail, inputPassword) => {
                     let accessToken = await generateAccessToken(userData);
                     let refreshToken = await generateRefreshToken(userData);
 
-                    // await insertRefreshTokenInDb(refreshToken);
+                    //Save AccessToken & RefreshToken into DB
+                    await saveJwtIntoDB(accessToken, refreshToken, userData.id);
 
                     resolve({
                         errCode: 0,
@@ -122,15 +123,40 @@ let handleLoginService = (inputEmail, inputPassword) => {
     })
 }
 
-let insertRefreshTokenInDb = async (refresh_Token) => {
-    try {
-        let createRefreshToken = await db.refreshToken.create({
-            token: refresh_Token,
-        });
-        return await createRefreshToken.save();
-    } catch (e) {
-        console.log(e);
-    }
+let saveJwtIntoDB = (aToken, rToken, idUser) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+
+            if (!aToken || !rToken || !idUser) {
+                resolve({
+                    errCode: 3,
+                    errMessage: 'Cannot generate token'
+                })
+            } else {
+
+                let jwtUserToken = await db.tokenJwt.findOne({
+                    where: { idUser: idUser }
+                })
+
+                if (jwtUserToken) {
+                    jwtUserToken.accessToken = aToken;
+                    jwtUserToken.refreshToken = rToken;
+
+                    await jwtUserToken.save();
+                } else {
+                    await db.tokenJwt.create({
+                        idUser: idUser,
+                        accessToken: aToken,
+                        refreshToken: rToken,
+                    })
+                }
+            }
+            resolve(true);
+        } catch (e) {
+            reject(e)
+        }
+    })
+
 }
 
 let checkUserEmail = (inputEmail) => {
