@@ -20,7 +20,7 @@ let verifyTokenService = (token) => {
                     process.env.JWT_ACCESS_KEY,
                     (err, user) => {
                         if (err) {
-                            response.errCode = 2;
+                            response.errCode = 10;
                             response.errMessage = 'Your token is not valid';
                             return response;
                         }

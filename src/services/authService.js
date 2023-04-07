@@ -5,8 +5,6 @@ import dotenv from "dotenv";
 
 dotenv.config();
 const salt = bcrypt.genSaltSync(10);
-//REDIS: lưu token into database
-let refreshTokensDB = [];
 
 //Generate access token
 let generateAccessToken = (user) => {
@@ -23,7 +21,7 @@ let generateAccessToken = (user) => {
                 roleId: user.roleId,
             },
                 process.env.JWT_ACCESS_KEY,
-                { expiresIn: "30d" }
+                { expiresIn: "30s" }
             )
             resolve(accessToken);
         } catch (e) {
@@ -261,13 +259,11 @@ let isCheckExistRefreshToken = async (refreshToken) => {
                 return isCheckExist;
             }
 
-            let checkToken = await db.refreshToken.findOne({
+            let checkToken = await db.tokenJwt.findOne({
                 where: {
-                    token: refreshToken
+                    refreshToken: refreshToken
                 }
             })
-
-            // console.log('>> Check compare refreshtoken: ', checkToken)
 
             if (!checkToken) {
                 resolve({
@@ -289,14 +285,12 @@ let isCheckExistRefreshToken = async (refreshToken) => {
 let getRefreshTokenService = (refresh_Token) => {
     return new Promise(async (resolve, reject) => {
         try {
-            console.log('>>check refresh_Token: ', refresh_Token);
             if (!refresh_Token) {
                 resolve({
                     errCode: 1,
                     errMessage: 'The refreshToken is not exist.'
                 })
             }
-
 
             let isCheckRefreshToken = await isCheckExistRefreshToken(refresh_Token);
 
@@ -306,7 +300,6 @@ let getRefreshTokenService = (refresh_Token) => {
                     errMessage: 'The refreshToken is not valid.'
                 })
             }
-
             else {
                 let response = {};
                 jwt.verify(refresh_Token,
@@ -318,21 +311,26 @@ let getRefreshTokenService = (refresh_Token) => {
                             return response;
                         }
                         else {
-                            // refreshTokensDB = refreshTokensDB.filter((token) => token !== refresh_Token);
-                            console.log('>> check user: ', user)
-                            let newAccessToken = generateAccessToken(user);
-                            let newRefreshToken = generateRefreshToken(user);
+                            // let newAccessToken = generateAccessToken(user);
+                            // let newRefreshToken = generateRefreshToken(user);
 
                             // insertRefreshTokenInDb(newRefreshToken);
 
                             response.errCode = 0;
                             response.errMessage = "getRefreshTokenService is sucessful";
-                            response.accessToken = newAccessToken;
-                            response.refreshToken = newRefreshToken;
+                            response.user = user;
+                            // response.accessToken = newAccessToken;
+                            // response.refreshToken = newRefreshToken;
+                            // response.idUser = user.id
 
                         }
                     })
-                await insertRefreshTokenInDb(response.refreshToken);
+                console.log(">> check response.user: ", response.user)
+                let newAccessToken = await generateAccessToken(response.user);
+                let newRefreshToken = await generateRefreshToken(response.user);
+                let idUser = response.user.id;
+
+                await saveJwtIntoDB(newAccessToken, newRefreshToken, idUser);
                 resolve(response);
             }
 

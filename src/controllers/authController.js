@@ -41,6 +41,7 @@ let handleCreateNewUser = async (req, res) => {
 
 let getRefreshToken = async (req, res) => {
     try {
+        // console.log(req.cookies.refreshToken);
         let refresh_Token = req.cookies.refreshToken;
         let message = await authService.getRefreshTokenService(refresh_Token);
         if (!message || !message.refreshToken) {
@@ -58,6 +59,7 @@ let getRefreshToken = async (req, res) => {
             });
             return res.status(200).json(message);
         }
+        return res.status(200).json("OK");
 
     } catch (e) {
         console.log(e);
