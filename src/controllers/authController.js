@@ -7,12 +7,15 @@ let handleLogin = async (req, res) => {
 
     try {
         let userInfo = await authService.handleLoginService(inputEmail, inputPassword);
-        res.cookie("refreshToken", userInfo.refreshToken, {
-            httpOnly: true,
-            secure: false,
-            path: "/",
-            sameSite: "strict",
-        })
+        if (userInfo.refreshToken) {
+            // console.log('>>check vao add cookie')
+            res.cookie("refreshToken", userInfo.refreshToken, {
+                httpOnly: true,
+                secure: false,
+                path: "/",
+                sameSite: "strict",
+            })
+        }
 
         // delete userInfo.refreshToken
 

@@ -21,7 +21,7 @@ let verifyTokenService = (token) => {
                     (err, user) => {
                         if (err) {
                             response.errCode = 10;
-                            response.errMessage = 'Your token is not valid';
+                            response.errMessage = 'Your token is expire';
                             return response;
                         }
                         else {

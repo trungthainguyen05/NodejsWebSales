@@ -56,3 +56,10 @@ npm install bcryptjs@2.4.3
 npm install jsonwebtoken@9.0.0
 
 npm install cookie-parser@1.4.6
+
+
+R1: Admin Authentication
+R2: Manager Authentication
+R3: Staff Authentication
+R4: Customer Authentication
+

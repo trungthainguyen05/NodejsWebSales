@@ -106,13 +106,12 @@ let handleLoginService = (inputEmail, inputPassword) => {
                         accessToken: accessToken,
                         refreshToken: refreshToken,
                     })
+                } else {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'The email or password is not correct.'
+                    })
                 }
-
-            } else {
-                resolve({
-                    errCode: 2,
-                    errMessage: 'The email or password is not correct.'
-                })
             }
 
         } catch (e) {
@@ -176,13 +175,6 @@ let checkUserEmail = (inputEmail) => {
         }
     })
 }
-
-/* Create user
-step 0: validate data
-step 1: check exist email
-Step 2: convert pass into hashPass
-Step 3:
-*/
 
 let handleCreateNewUserService = (data) => {
     return new Promise(async (resolve, reject) => {
@@ -311,24 +303,17 @@ let getRefreshTokenService = (refresh_Token) => {
                             return response;
                         }
                         else {
-                            // let newAccessToken = generateAccessToken(user);
-                            // let newRefreshToken = generateRefreshToken(user);
-
-                            // insertRefreshTokenInDb(newRefreshToken);
-
                             response.errCode = 0;
                             response.errMessage = "getRefreshTokenService is sucessful";
                             response.user = user;
-                            // response.accessToken = newAccessToken;
-                            // response.refreshToken = newRefreshToken;
-                            // response.idUser = user.id
-
                         }
                     })
-                console.log(">> check response.user: ", response.user)
+
                 let newAccessToken = await generateAccessToken(response.user);
                 let newRefreshToken = await generateRefreshToken(response.user);
                 let idUser = response.user.id;
+                response.accessToken = newAccessToken;
+                response.refreshToken = newRefreshToken;
 
                 await saveJwtIntoDB(newAccessToken, newRefreshToken, idUser);
                 resolve(response);
